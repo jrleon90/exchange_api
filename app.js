@@ -1,9 +1,10 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 
 const PORT = process.env.PORT || 3600;
 
-mongoose.connect('mongodb://localhost:27017/exchange_db', { useNewUrlParser: true });
+mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true });
 
 const app = express();
 

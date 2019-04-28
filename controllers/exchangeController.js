@@ -5,35 +5,21 @@ const calculateExchange = async (req, res) => {
   try {
     const { from, to, total } = req.query;
     const fromCurrency = await Currency.findOne({ currency_code: from });
-    let toCurrency = {};
+    const toCurrency = await Currency.findOne({ currency_code: to });
+    let exchangeVal = 0;
     if (fromCurrency.currency_code === 'USD') {
-      toCurrency = await Currency.aggregate([{ $match: { currency_code: to } },
-        {
-          $project: {
-            exchange: { $multiply: [parseFloat(total), '$usd_rate'] },
-          },
-        }]);
+      exchangeVal = parseFloat(total) * toCurrency.usd_rate;
     } else if (to === 'USD') {
-      toCurrency = await Currency.aggregate([{ $match: { currency_code: to } },
-        {
-          $project: {
-            exchange: { $divide: [parseFloat(total), fromCurrency.usd_rate] },
-          },
-        }]);
+      exchangeVal = parseFloat(total) / fromCurrency.usd_rate;
     } else {
       const usdExchange = parseFloat(total) / fromCurrency.usd_rate;
-      toCurrency = await Currency.aggregate([{ $match: { currency_code: to } },
-        {
-          $project: {
-            exchange: { $multiply: [parseFloat(usdExchange), '$usd_rate'] },
-          },
-        }]);
-      cache.put(req.decoded.email,
-        { exchange: toCurrency[0].exchange.toFixed(4) }, 60000);
+      exchangeVal = parseFloat(usdExchange) * toCurrency.usd_rate;
     }
-    return res.json({ value: toCurrency[0].exchange.toFixed(4) });
+    cache.put(req.decoded.email,
+      { exchange: exchangeVal.toFixed(4) }, 60000);
+    return res.json({ value: exchangeVal.toFixed(4) });
   } catch (err) {
-    return res.status(500).json({ Error: err });
+    return res.status(500).json({ Error: 'There was an error' });
   }
 };
 
