@@ -1,3 +1,4 @@
+const cache = require('memory-cache');
 const Currency = require('../models/currency');
 
 const calculateExchange = async (req, res) => {
@@ -27,6 +28,8 @@ const calculateExchange = async (req, res) => {
             exchange: { $multiply: [parseFloat(usdExchange), '$usd_rate'] },
           },
         }]);
+      cache.put(req.decoded.email,
+        { exchange: toCurrency[0].exchange.toFixed(4) }, 60000);
     }
     return res.json({ value: toCurrency[0].exchange.toFixed(4) });
   } catch (err) {
@@ -34,6 +37,19 @@ const calculateExchange = async (req, res) => {
   }
 };
 
+const getCacheExchangeVal = async (req, res) => {
+  try {
+    const cacheVal = cache.get(req.decoded.email);
+    if (cacheVal !== null) {
+      return res.json(cacheVal);
+    }
+    return res.status(404).json({ Message: 'No Cache found' });
+  } catch (err) {
+    return res.status(500).json({ Error: err });
+  }
+};
+
 module.exports = {
   calculateExchange,
+  getCacheExchangeVal,
 };

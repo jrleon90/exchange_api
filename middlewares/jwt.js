@@ -5,6 +5,7 @@ const createToken = async (user) => {
   try {
     const token = await jwt.sign({
       id: user.id,
+      email: user.email,
     },
     process.env.JWT_ENCRYPTION,
     {
