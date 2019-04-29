@@ -53,6 +53,8 @@ https://currency-api-842.herokuapp.com/user/login
 ```
 Sending with basic auth the user email and password, you will get a token in the response to make the next requests.
 
+> Log In and Register are the only routes that are not protected, in order to use any of the other endpoints, it is mandatory to send a token inside the request headers.
+
 3. **Create new currency**
 
 In order to create a new currency send a POST request to:
